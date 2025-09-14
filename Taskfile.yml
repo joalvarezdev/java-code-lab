@@ -1,0 +1,25 @@
+---
+version: "3"
+
+vars:
+  NODE_PKG_MANAGER: bun
+  GRADLE: ./gradlew
+  DOCKER_USER: joalvarezdev
+
+tasks:
+
+  node-dependencies:
+    desc: install node dependencies
+    preconditions:
+      - sh: 'command -v {{.NODE_PKG_MANAGER}} > /dev/null 2>&1'
+        msg: "{{.NODE_PKG_MANAGER}} is not installed. Install it or change NODE_PKG_MANAGER in the Taskfile."
+    cmds:
+      - cmd: "{{.NODE_PKG_MANAGER}} install > /dev/null 2>&1"
+        silent: true
+
+  gen-java-class:
+    desc: create class hbs
+    deps: [node-dependencies]
+    cmds:
+      - cmd: "{{.NODE_PKG_MANAGER}} run plop"
+        silent: true

@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: send emails
+
+  liquibase:
+    change-log: classpath:database/liquibase-changelog.yml
+    url: \${DATABASE_URL:jdbc:postgresql://localhost:5432/send emails}
+    user: \${DATABASE_USERNAME:postgres}
+    password: \${DATABASE_PASSWORD:postgres}
+    enabled: false
+
+  datasource:
+    driver-class-name: com.zaxxer.hikari.HikariDataSource
+#    url: \${DATABASE_URL:jdbc:postgresql://localhost:5432/send emails}
+    url: jdbc:h2:mem:testdb
+#    username: \${DATABASE_USERNAME:postgres}
+    username: sa
+#    password: \${DATABASE_PASSWORD:postgres}
+    password:
+
+  jpa:
+    enabled: false
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    database: postgresql
+    open-in-view: false
+    generate-ddl: false
+    defer-datasource-initialization: false
+
+  sql:
+    init:
+      mode: never
+
+  output:
+    ansi:
+      enabled: always
+
+  mail:
+    host: localhost
+    port: 1025
+    username:
+    password:
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+app:
+  version: ${version}
+  name: \${spring.application.name}
+  description: ${description}
+
+server:
+  port: 8090
+  servlet:
+    context-path: \${CONTEXT_PATH:/}
+
+springdoc:
+  swagger-ui:
+    doc-expansion: none

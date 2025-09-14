@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: initial configuration
+      author: joalvarez
+      comment: Load initial configuration for {{moduleName}} module
+      changes:
+        - sqlFile:
+            path: database/configuration.sql
+            relativeToChangelogFile: true

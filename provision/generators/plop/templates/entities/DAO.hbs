@@ -1,0 +1,27 @@
+package {{package}}.data.dao;
+
+import {{package}}.data.domain.{{name}};
+import {{package}}.data.repository.{{name}}Repository;
+import com.joalvarez.shared.data.dao.general.BaseDAO;
+
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Component;
+{{#if (eq entityId "UUID")}}
+
+import java.util.UUID;
+{{/if}}
+import java.util.Map;
+import java.util.function.Function;
+
+@Component
+public class {{className}} extends BaseDAO<{{name}}Repository, {{name}}, {{entityId}}> {
+
+    public {{className}}({{name}}Repository repository) {
+        super(repository);
+    }
+
+    @Override
+    protected Map<String, Function<String, Specification<{{name}}>>> filterProcessors() {
+      return Map.of();
+    }
+}

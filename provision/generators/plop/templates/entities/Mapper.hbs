@@ -1,0 +1,16 @@
+package {{package}}.data.mapper;
+
+import {{package}}.data.domain.{{name}};
+import {{package}}.data.dto.{{name}}DTO;
+import com.joalvarez.shared.data.mapper.general.BaseMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class {{className}} extends BaseMapper<{{name}}DTO, {{name}}> {
+
+    public {{name}}Mapper(ObjectMapper mapper) {
+        super(mapper);
+    }
+}

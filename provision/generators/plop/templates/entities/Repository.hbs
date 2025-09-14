@@ -1,0 +1,12 @@
+package {{package}}.data.repository;
+
+import {{package}}.data.domain.{{name}};
+import com.joalvarez.shared.data.repository.general.GenericRepository;
+import org.springframework.stereotype.Repository;
+{{#if (eq entityId "UUID")}}
+
+import java.util.UUID;
+{{/if}}
+
+@Repository
+public interface {{className}} extends GenericRepository<{{name}}, {{entityId}}> {}

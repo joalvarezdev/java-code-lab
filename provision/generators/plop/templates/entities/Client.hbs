@@ -1,0 +1,9 @@
+package {{package}}.client;
+
+import org.springframework.cloud.openfeign.FeignClient;
+
+@FeignClient(
+    name = "{{slugify className}}",
+    url = "{{baseUrl}}"
+)
+public interface {{className}} {}

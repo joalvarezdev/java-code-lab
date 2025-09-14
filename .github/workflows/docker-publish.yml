@@ -1,0 +1,55 @@
+name: Publish Docker Image
+
+on:
+  workflow_call:
+    secrets:
+      DOCKER_USERNAME:
+        required: true
+      DOCKER_PASSWORD:
+        required: true
+
+jobs:
+  build:
+    name: Build and Publish Docker images
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Verify Test
+        run: ./gradlew test
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Get project name from Gradle
+        id: project_name
+        run: echo "PROJECT_NAME=$(./gradlew printProjectName -q)" >> $GITHUB_ENV
+
+      - name: Extract version from Gradle
+        id: extract_version
+        run: |
+          VERSION=$(grep "^version" build.gradle.kts | sed 's/[^0-9.]//g')
+          echo "VERSION=$VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker image with version
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:${{ env.VERSION }} .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:${{ env.VERSION }} ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME}}:latest
+
+      - name: Push Docker image with specific version
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:${{ env.VERSION }}
+
+      - name: Push Docker image with latest tag
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/${{ env.PROJECT_NAME }}:latest

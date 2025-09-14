@@ -1,0 +1,48 @@
+spring:
+  application:
+    name: {{moduleName}}
+
+  liquibase:
+    change-log: classpath:database/liquibase-changelog.yml
+    url: {{env "DATABASE_URL" (concat "jdbc:postgresql://localhost:5432/" moduleName)}}
+    user: {{env "DATABASE_USERNAME" "postgres"}}
+    password: {{env "DATABASE_PASSWORD" "postgres"}}
+    enabled: true
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: {{env "DATABASE_URL" (concat "jdbc:postgresql://localhost:5432/" moduleName)}}
+    username: {{env "DATABASE_USERNAME" "postgres"}}
+    password: {{env "DATABASE_PASSWORD" "postgres"}}
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+    generate-ddl: false
+    defer-datasource-initialization: false
+
+  sql:
+    init:
+      mode: never
+
+  output:
+    ansi:
+      enabled: always
+
+app:
+  version: {{var "version"}}
+  name: {{env "spring.application.name"}}
+  description: {{var "description"}}
+
+server:
+  port: 8090
+  servlet:
+    context-path: {{env "CONTEXT_PATH" "/"}}
+
+springdoc:
+  swagger-ui:
+    doc-expansion: none

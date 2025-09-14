@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<ruleset name="Spring Boot Custom Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+  <description>
+    This ruleset includes standard PMD rules for general code quality.
+  </description>
+  <!-- Best Practices -->
+  <rule ref="category/java/bestpractices.xml/AvoidPrintStackTrace" />
+  <rule ref="category/java/bestpractices.xml/AvoidReassigningCatchVariables" />
+  <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters" />
+  <rule ref="category/java/bestpractices.xml/ConstantsInInterface" />
+  <rule ref="category/java/bestpractices.xml/ForLoopCanBeForeach" />
+  <!--  <rule ref="category/java/bestpractices.xml/GuardLogStatement" />-->
+  <!--
+    <properties>
+      <property name="logLevels" value="trace,debug,info,warn,error,log,finest,fine,info,warning,severe" />
+      <property name="guardsMethods" value="isTraceEnabled,isDebugEnabled,isInfoEnabled,isWarnEnabled,isErrorEnabled,isLoggable"/>
+    </properties>
+  </rule>
+  -->
+
+
+  <!-- Code Style -->
+  <rule ref="category/java/codestyle.xml/BooleanGetMethodName" />
+  <rule ref="category/java/codestyle.xml/FieldDeclarationsShouldBeAtStartOfClass" />
+  <rule ref="category/java/codestyle.xml/EmptyControlStatement" />
+  <rule ref="category/java/codestyle.xml/FieldNamingConventions" />
+  <rule ref="category/java/codestyle.xml/LambdaCanBeMethodReference" />
+  <rule ref="category/java/codestyle.xml/LocalVariableCouldBeFinal" />
+  <rule ref="category/java/codestyle.xml/LocalVariableNamingConventions" />
+  <rule ref="category/java/codestyle.xml/LongVariable" />
+<!--  <rule ref="category/java/codestyle.xml/MethodArgumentCouldBeFinal" />-->
+  <rule ref="category/java/codestyle.xml/MethodNamingConventions" />
+  <rule ref="category/java/codestyle.xml/PrematureDeclaration" />
+  <rule ref="category/java/codestyle.xml/RemoteInterfaceNamingConvention" />
+  <rule ref="category/java/codestyle.xml/ShortClassName" />
+  <rule ref="category/java/codestyle.xml/UnnecessaryBoxing" />
+  <rule ref="category/java/codestyle.xml/UnnecessaryCast" />
+  <rule ref="category/java/codestyle.xml/UnnecessaryImport" />
+  <rule ref="category/java/codestyle.xml/UnnecessaryLocalBeforeReturn" />
+  <rule ref="category/java/codestyle.xml/UnnecessaryReturn" />
+  <rule ref="category/java/codestyle.xml/UnnecessarySemicolon" />
+  <rule ref="category/java/codestyle.xml/UseDiamondOperator" />
+  <rule ref="category/java/codestyle.xml/UseExplicitTypes" />
+  <rule ref="category/java/codestyle.xml/UselessParentheses" />
+  <rule ref="category/java/codestyle.xml/UseShortArrayInitializer" />
+  <rule ref="category/java/codestyle.xml/ShortMethodName">
+    <properties>
+      <property name="minimum" value="3" />
+    </properties>
+  </rule>
+
+</ruleset>

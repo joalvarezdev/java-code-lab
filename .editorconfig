@@ -1,0 +1,43 @@
+# EditorConfig is awesome: http://EditorConfig.org
+
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = false
+indent_style = space
+charset = utf-8
+trim_trailing_whitespace = true
+indent_size = 2
+
+[*.java]
+
+indent_style = tab
+indent_size = 4
+
+[*.{el}]
+insert_final_newline = false
+
+[*.{el,md,mdx,yml,yaml,js,json,toml,ts,tsx,hcl,tf,graphql,hbs,sh}]
+
+[*.{js,jsx,ts,tsx,css,less,sass,scss,vue,py}]
+indent_size = 4
+
+[*.go]
+indent_style = tab
+
+[**.min.js]
+indent_style = unset
+insert_final_newline = unset
+
+[Makefile]
+indent_style = tab
+
+[*.{el,js,json,md,yml,yaml,tf}]
+
+[*.{make,mk}]
+indent_style = tab
+indent_size  = 4
+
+[*.bat]
+indent_style = tab

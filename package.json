@@ -1,0 +1,37 @@
+{
+    "name": "java-code-lab",
+    "version": "1.0.0",
+    "description": "java-code-lab",
+    "author": "Team Backend <alvarez.joaquinez@gmail.com>",
+    "license": "LGPL-3.0",
+    "engines": {
+      "node": ">=14"
+    },
+    "scripts": {
+      "plop": "cross-env TS_NODE_PROJECT='./provision/generators/plop/ts-node.tsconfig.json' plop --plopfile provision/generators/plop/index.ts",
+      "ncu": "ncu -u --target minor",
+      "ncu:patch": "ncu -u --target patch",
+      "prettier": "prettier --config=.ci/linters/prettier.config.js --ignore-path=.ci/linters/.prettierignore --list-different",
+      "prettier:fix": "yarn prettier:lint --write=true",
+      "prettier:lint": "yarn prettier '**/*.{js?(on),ts?(x),scss,md,y?(a)ml,gql,graphql?(s),less,mjml}' --write=false"
+    },
+    "publishConfig": {
+      "access": "public",
+      "registry": "https://registry.npmjs.org/"
+    },
+    "keywords": [],
+    "dependencies": {},
+    "devDependencies": {
+      "cross-env": "^7.0.3",
+      "handlebars-helpers": "^0.10.0",
+      "node-plop": "^0.26.3",
+      "plop": "^2.7.6",
+      "prettier": "^2.3.2",
+      "prettier-eslint": "^12.0.0",
+      "slugify": "^1.6.6",
+      "ts-node": "^10.0.0",
+      "typescript": "^4.3.5"
+    },
+    "prettier": "./.ci/linters/prettier.config.js"
+}
+  

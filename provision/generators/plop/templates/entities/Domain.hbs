@@ -1,0 +1,30 @@
+package {{package}}.data.domain;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+{{#if (or (eq entityId "Long") (eq entityId "Integer")) }}
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+{{/if}}
+{{#if (eq entityId "UUID")}}
+
+import java.util.UUID;
+{{/if}}
+
+@Entity(name = "{{pluralName}}")
+public class {{className}} {
+
+    @Id
+    {{#if (or (eq entityId "Long") (eq entityId "Integer")) }}
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    {{/if}}
+    private {{entityId}} id;
+
+    public {{entityId}} getId() {
+        return id;
+    }
+
+    public void setId({{entityId}} id) {
+        this.id = id;
+    }
+}

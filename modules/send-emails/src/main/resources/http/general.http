@@ -1,0 +1,9 @@
+### Nueva request
+
+POST http://localhost:8090/emails/simple HTTP/1.1
+
+{
+  "subject": "prueba de email simple",
+  "text": "estamos probando envio de emails desde spring boot a mailhog",
+  "to": "joalvarez@infosis.tech"
+}

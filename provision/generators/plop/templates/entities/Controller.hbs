@@ -1,0 +1,25 @@
+package {{package}}.controller;
+
+import {{package}}.data.dao.{{name}}DAO;
+import {{package}}.data.domain.{{name}};
+import {{package}}.data.dto.{{name}}DTO;
+import {{package}}.data.mapper.{{name}}Mapper;
+import {{package}}.service.{{name}}Service;
+import com.joalvarez.shared.controller.general.BasicController;
+
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+{{#if (eq entityId "UUID")}}
+
+import java.util.UUID;
+{{/if}}
+
+@RestController
+@RequestMapping("{{slugify entityName}}s")
+public class {{className}}
+        extends BasicController<{{name}}Service, {{name}}DAO, {{name}}Mapper, {{name}}DTO, {{name}}, {{entityId}}> {
+
+    public {{name}}Controller({{name}}Service service) {
+        super(service);
+    }
+}

@@ -1,0 +1,33 @@
+package {{package}}.service;
+
+import {{package}}.data.dao.{{name}}DAO;
+import {{package}}.data.domain.{{name}};
+import {{package}}.data.dto.{{name}}DTO;
+import {{package}}.data.mapper.{{name}}Mapper;
+import com.joalvarez.shared.service.general.BaseService;
+
+import org.springframework.stereotype.Service;
+{{#if (eq entityId "UUID")}}
+
+import java.util.UUID;
+{{/if}}
+import java.util.Set;
+
+@Service
+public class {{className}}
+        extends BaseService<
+                {{name}}DAO,
+                {{name}}Mapper,
+                {{name}}DTO,
+                {{name}},
+                {{entityId}}> {
+
+    public {{className}}({{name}}DAO dao, {{name}}Mapper mapper) {
+        super(dao, mapper);
+    }
+
+    @Override
+    protected Set<String> validFields() {
+        return Set.of();
+    }
+}
