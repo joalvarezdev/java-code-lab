@@ -4,9 +4,17 @@ import com.joalvarez.shared.config.GlobalConfig;
 import com.joalvarez.shared.config.properties.AppBaseProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
-@SpringBootApplication(scanBasePackages = GlobalConfig.BASE_PACKAGE)
+@SpringBootApplication(
+	scanBasePackages = GlobalConfig.BASE_PACKAGE,
+	exclude = {
+		DataSourceAutoConfiguration.class,
+		LiquibaseAutoConfiguration.class
+	}
+)
 @EnableConfigurationProperties({AppBaseProperties.class})
 public class SendEmailsApplication {
 

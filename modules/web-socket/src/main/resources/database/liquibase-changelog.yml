@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: initial configuration
+      author: joalvarez
+      comment: Load initial configuration for web socket module
+      changes:
+        - sqlFile:
+            path: database/configuration.sql
+            relativeToChangelogFile: true

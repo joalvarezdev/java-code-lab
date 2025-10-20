@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sistema de Notificaciones - Multitenant</title>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        /* Login Page Styles */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-title {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+            font-size: 28px;
+            font-weight: 300;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .login-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Main App Styles */
+        .app-container {
+            display: none;
+            background-color: white;
+            min-height: 100vh;
+        }
+        .app-header {
+            background-color: #667eea;
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .app-title {
+            font-size: 24px;
+            font-weight: 300;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* Notification Bell */
+        .notification-bell {
+            position: fixed;
+            top: 120px;
+            right: 30px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+            z-index: 1000;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .notification-bell:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(33, 150, 243, 0.6);
+        }
+        .notification-bell.has-notifications {
+            animation: bellShake 0.5s ease-in-out;
+        }
+        @keyframes bellShake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #f44336;
+            color: white;
+            border-radius: 50%;
+            min-width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 6px;
+            font-weight: bold;
+        }
+        
+        /* Notification Panel */
+        .notification-panel {
+            position: fixed;
+            top: 190px;
+            right: 30px;
+            width: 380px;
+            max-height: 500px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            z-index: 999;
+            display: none;
+            overflow: hidden;
+        }
+        .notification-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notification-body {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .notification-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .notification-item:hover {
+            background-color: #f8f9fa;
+        }
+        .notification-item.unread {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+        }
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #333;
+        }
+        .notification-message {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        .notification-time {
+            font-size: 12px;
+            color: #999;
+        }
+        .no-notifications {
+            padding: 40px 20px;
+            text-align: center;
+            color: #999;
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .welcome-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .test-btn {
+            padding: 12px 24px;
+            border: 1px solid #2196f3;
+            background: white;
+            color: #2196f3;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .test-btn:hover {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Login Page -->
+    <div id="login-page" class="login-container">
+        <div class="login-box">
+            <h1 class="login-title">🔔 Notificaciones</h1>
+            <form id="login-form">
+                <div class="form-group">
+                    <label class="form-label" for="tenantId">Tenant ID:</label>
+                    <input type="text" id="tenantId" class="form-input" placeholder="Ej: empresa-abc" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="userId">Usuario ID:</label>
+                    <input type="text" id="userId" class="form-input" placeholder="Ej: usuario123" required>
+                </div>
+                <button type="submit" class="login-btn">Conectar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app-page" class="app-container">
+        <header class="app-header">
+            <h1 class="app-title">Sistema de Notificaciones</h1>
+            <div class="user-info">
+                <span id="current-user"></span>
+                <button id="logout-btn" class="logout-btn">Salir</button>
+            </div>
+        </header>
+
+        <!-- Notification Bell -->
+        <button id="notification-bell" class="notification-bell">
+            🔔
+            <span id="notification-badge" class="notification-badge hidden">0</span>
+        </button>
+
+        <!-- Notification Panel -->
+        <div id="notification-panel" class="notification-panel">
+            <div class="notification-header">
+                <span>Notificaciones</span>
+                <button id="close-panel" style="background: none; border: none; font-size: 18px; cursor: pointer;">×</button>
+            </div>
+            <div class="notification-body" id="notification-body">
+                <div class="no-notifications">No hay notificaciones</div>
+            </div>
+        </div>
+
+        <main class="main-content">
+            <div class="welcome-card">
+                <h2>¡Bienvenido al Sistema de Notificaciones!</h2>
+                <p>Estás conectado y listo para recibir notificaciones en tiempo real.</p>
+                <p><strong>Tenant:</strong> <span id="display-tenant"></span></p>
+                <p><strong>Usuario:</strong> <span id="display-user"></span></p>
+                
+                <h3>Pruebas:</h3>
+                <div class="test-buttons">
+                    <button id="test-notification" class="test-btn">🔔 Enviar Notificación de Prueba</button>
+                    <button id="clear-notifications" class="test-btn">🗑️ Limpiar Notificaciones</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let stompClient = null;
+        let currentTenant = null;
+        let currentUser = null;
+        let notifications = [];
+
+        // Elements
+        const loginPage = document.getElementById('login-page');
+        const appPage = document.getElementById('app-page');
+        const loginForm = document.getElementById('login-form');
+        const notificationBell = document.getElementById('notification-bell');
+        const notificationPanel = document.getElementById('notification-panel');
+        const notificationBadge = document.getElementById('notification-badge');
+        const notificationBody = document.getElementById('notification-body');
+
+        // Event Listeners
+        loginForm.addEventListener('submit', handleLogin);
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('test-notification').addEventListener('click', sendTestNotification);
+        document.getElementById('clear-notifications').addEventListener('click', clearNotifications);
+        notificationBell.addEventListener('click', toggleNotificationPanel);
+        document.getElementById('close-panel').addEventListener('click', closeNotificationPanel);
+
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            currentTenant = document.getElementById('tenantId').value.trim();
+            currentUser = document.getElementById('userId').value.trim();
+            
+            if (!currentTenant || !currentUser) {
+                alert('Por favor completa todos los campos');
+                return;
+            }
+
+            connectWebSocket();
+        }
+
+        function connectWebSocket() {
+            try {
+                const socket = new WebSocket('ws://localhost:8090/ws');
+                stompClient = Stomp.over(socket);
+                
+                stompClient.connect({}, function(frame) {
+                    console.log('✅ Conectado: ' + frame);
+                    
+                    // Suscribirse a notificaciones  
+                    const notificationChannel = `/user/queue/notifications`;
+                    console.log('🔗 Suscribiéndose a canal:', notificationChannel);
+                    
+                    stompClient.subscribe(notificationChannel, function(message) {
+                        console.log('📨 Mensaje RAW recibido:', message);
+                        const notification = JSON.parse(message.body);
+                        console.log('📨 Notificación parseada:', notification);
+                        handleNewNotification(notification);
+                    });
+
+                    // Enviar suscripción
+                    stompClient.send("/app/notification.subscribe", {}, JSON.stringify({
+                        tenant_id: currentTenant,
+                        user_id: currentUser
+                    }));
+
+                    showAppPage();
+                }, function(error) {
+                    console.error('❌ Error de conexión:', error);
+                    alert('Error de conexión: ' + error);
+                });
+            } catch (error) {
+                console.error('❌ Error creando conexión:', error);
+                alert('Error al crear conexión: ' + error.message);
+            }
+        }
+
+        function handleNewNotification(notification) {
+            notifications.unshift(notification);
+            updateNotificationBadge();
+            animateBell();
+            console.log('📨 Nueva notificación:', notification);
+        }
+
+        function updateNotificationBadge() {
+            const unreadCount = notifications.filter(n => n.isUnread).length;
+            
+            if (unreadCount > 0) {
+                notificationBadge.textContent = unreadCount;
+                notificationBadge.classList.remove('hidden');
+            } else {
+                notificationBadge.classList.add('hidden');
+            }
+        }
+
+        function animateBell() {
+            notificationBell.classList.add('has-notifications');
+            setTimeout(() => {
+                notificationBell.classList.remove('has-notifications');
+            }, 500);
+        }
+
+        function toggleNotificationPanel() {
+            const isVisible = notificationPanel.style.display === 'block';
+            
+            if (isVisible) {
+                closeNotificationPanel();
+            } else {
+                showNotificationPanel();
+            }
+        }
+
+        function showNotificationPanel() {
+            updateNotificationPanel();
+            notificationPanel.style.display = 'block';
+        }
+
+        function closeNotificationPanel() {
+            notificationPanel.style.display = 'none';
+        }
+
+        function updateNotificationPanel() {
+            if (notifications.length === 0) {
+                notificationBody.innerHTML = '<div class="no-notifications">No hay notificaciones</div>';
+                return;
+            }
+
+            const notificationHtml = notifications.map(notification => `
+                <div class="notification-item ${notification.isUnread ? 'unread' : ''}" 
+                     onclick="markAsRead('${notification.tenantId}', '${notification.userId}')">
+                    <div class="notification-title">${notification.type.icon || '🔔'} ${notification.title}</div>
+                    <div class="notification-message">${notification.message}</div>
+                    <div class="notification-time">${formatTime(notification.timestamp)}</div>
+                </div>
+            `).join('');
+
+            notificationBody.innerHTML = notificationHtml;
+        }
+
+        function markAsRead(tenantId, userId) {
+            notifications.forEach(n => {
+                if (n.tenantId === tenantId && n.userId === userId) {
+                    n.isUnread = false;
+                }
+            });
+            updateNotificationBadge();
+            updateNotificationPanel();
+        }
+
+        function sendTestNotification() {
+            if (!stompClient || !stompClient.connected) {
+                alert('No estás conectado');
+                return;
+            }
+
+            console.log('🔔 Enviando notificación de prueba...');
+            const payload = {
+                tenant_id: currentTenant,
+                user_id: currentUser
+            };
+            console.log('📤 Payload:', payload);
+            
+            stompClient.send("/app/notification.test", {}, JSON.stringify(payload));
+        }
+
+        function clearNotifications() {
+            notifications = [];
+            updateNotificationBadge();
+            updateNotificationPanel();
+        }
+
+        function formatTime(timestamp) {
+            return new Date(timestamp).toLocaleString('es-ES', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit'
+            });
+        }
+
+        function showAppPage() {
+            loginPage.style.display = 'none';
+            appPage.style.display = 'block';
+            
+            document.getElementById('current-user').textContent = `${currentUser} (${currentTenant})`;
+            document.getElementById('display-tenant').textContent = currentTenant;
+            document.getElementById('display-user').textContent = currentUser;
+        }
+
+        function handleLogout() {
+            if (stompClient && stompClient.connected) {
+                stompClient.disconnect();
+            }
+            
+            loginPage.style.display = 'block';
+            appPage.style.display = 'none';
+            
+            currentTenant = null;
+            currentUser = null;
+            notifications = [];
+            
+            document.getElementById('tenantId').value = '';
+            document.getElementById('userId').value = '';
+            
+            closeNotificationPanel();
+        }
+
+        // Cerrar panel al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            if (!notificationPanel.contains(e.target) && !notificationBell.contains(e.target)) {
+                closeNotificationPanel();
+            }
+        });
+    </script>
+</body>
+</html>

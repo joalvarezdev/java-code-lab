@@ -1,26 +1,26 @@
 spring:
   application:
-    name: send emails
+    name: web-socket
 
   liquibase:
     change-log: classpath:database/liquibase-changelog.yml
-    url: \${DATABASE_URL:jdbc:postgresql://localhost:5432/send emails}
+    url: \${DATABASE_URL:jdbc:postgresql://localhost:5432/web-socket}
     user: \${DATABASE_USERNAME:postgres}
     password: \${DATABASE_PASSWORD:postgres}
     enabled: false
 
   datasource:
-    driver-class-name: com.zaxxer.hikari.HikariDataSource
-    url: \${DATABASE_URL:jdbc:postgresql://localhost:5432/send emails}
+    driver-class-name: org.postgresql.Driver
+    url: \${DATABASE_URL:jdbc:postgresql://localhost:5432/web-socket}
     username: \${DATABASE_USERNAME:postgres}
     password: \${DATABASE_PASSWORD:postgres}
 
   jpa:
-    enabled: false
     hibernate:
-      ddl-auto: none
+      ddl-auto: create-drop
     show-sql: false
     database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
     generate-ddl: false
     defer-datasource-initialization: false
@@ -32,18 +32,6 @@ spring:
   output:
     ansi:
       enabled: always
-
-  mail:
-    host: mailpit.infosis.tech
-    port: 1025
-    username:
-    password:
-    properties:
-      mail:
-        smtp:
-          auth: false
-          starttls:
-            enable: false
 
 app:
   version: ${version}
@@ -58,3 +46,10 @@ server:
 springdoc:
   swagger-ui:
     doc-expansion: none
+
+cors-configuration:
+  origins: [ "*" ]
+  methods: [ "*" ]
+  headers: [ "*" ]
+  credentials: false
+  max-age: 3600

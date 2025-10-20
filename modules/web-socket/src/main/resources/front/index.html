@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat WebSocket</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #chat { 
+            border: 1px solid #ddd; 
+            height: 400px; 
+            overflow-y: scroll; 
+            padding: 15px; 
+            margin: 15px 0; 
+            background-color: #fafafa;
+            border-radius: 4px;
+        }
+        .message { 
+            margin: 8px 0; 
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .system { 
+            color: #666; 
+            font-style: italic; 
+            background-color: #f0f0f0;
+        }
+        .user-message {
+            background-color: #e3f2fd;
+            border-left: 3px solid #2196f3;
+        }
+        input, button { 
+            padding: 10px; 
+            margin: 5px; 
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        input {
+            width: 200px;
+        }
+        button {
+            background-color: #2196f3;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background-color: #1976d2;
+        }
+        #leave {
+            background-color: #f44336;
+        }
+        #leave:hover {
+            background-color: #d32f2f;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💬 Chat WebSocket Demo</h1>
+        
+        <div id="username-page">
+            <h2>👤 Ingresa tu nombre:</h2>
+            <input type="text" id="name" placeholder="Tu nombre" />
+            <button id="join">🚀 Unirse al chat</button>
+            <p><small>Después de unirte, abre otra pestaña para chatear contigo mismo</small></p>
+        </div>
+
+        <div id="chat-page" class="hidden">
+            <div id="chat"></div>
+            <div>
+                <input type="text" id="message" placeholder="Escribe tu mensaje..." />
+                <button id="send">📤 Enviar</button>
+                <button id="leave">🚪 Salir</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let stompClient = null;
+
+        // Event listeners
+        document.getElementById('join').addEventListener('click', connect);
+        document.getElementById('send').addEventListener('click', sendMessage);
+        document.getElementById('leave').addEventListener('click', disconnect);
+        document.getElementById('message').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function connect() {
+            const username = document.getElementById('name').value.trim();
+
+            if (!username) {
+                alert('Por favor ingresa un nombre');
+                return;
+            }
+
+                try {
+                    const socket = new WebSocket('ws://localhost:8090/ws');
+                    stompClient = Stomp.over(socket);
+                    
+                    stompClient.connect({}, function(frame) {
+                        console.log('✅ Connected: ' + frame);
+                        showChatPage();
+                        
+                        stompClient.subscribe('/topic/public', function(messageOutput) {
+                            const message = JSON.parse(messageOutput.body);
+                            showMessage(message);
+                        });
+                        
+                        // Notificar que el usuario se unió
+                        stompClient.send("/app/chat.addUser",
+                            {},
+                            JSON.stringify({sender: username, type: 'JOIN', content: username + ' se unió al chat'})
+                        );
+                    }, function(error) {
+                        console.error('❌ Connection error:', error);
+                        alert('Error de conexión: ' + error);
+                    });
+                } catch (error) {
+                    console.error('❌ Error creating connection:', error);
+                    alert('Error al crear conexión: ' + error.message);
+                }
+        }
+
+        function sendMessage() {
+            const messageInput = document.getElementById('message');
+            const messageContent = messageInput.value.trim();
+            
+            if(messageContent && stompClient && stompClient.connected) {
+                const chatMessage = {
+                    sender: document.getElementById('name').value,
+                    content: messageInput.value,
+                    type: 'CHAT'
+                };
+                
+                stompClient.send("/app/chat.sendMessage", {}, JSON.stringify(chatMessage));
+                messageInput.value = '';
+            } else if (!stompClient || !stompClient.connected) {
+                alert('No estás conectado. Por favor reconéctate.');
+            }
+        }
+
+        function showMessage(message) {
+            const chatDiv = document.getElementById('chat');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            
+            if(message.type === 'JOIN') {
+                messageElement.innerHTML = `<span class="system">[${timestamp}] ${message.content}</span>`;
+                messageElement.classList.add('system');
+            } else if(message.type === 'LEAVE') {
+                messageElement.innerHTML = `<span class="system">[${timestamp}] ${message.sender} salió del chat</span>`;
+                messageElement.classList.add('system');
+            } else {
+                messageElement.innerHTML = `<strong>${message.sender}:</strong> ${message.content}<br><small style="color:#666;">[${timestamp}]</small>`;
+                messageElement.classList.add('user-message');
+            }
+            
+            chatDiv.appendChild(messageElement);
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
+
+        function showChatPage() {
+            document.getElementById('username-page').classList.add('hidden');
+            document.getElementById('chat-page').classList.remove('hidden');
+        }
+
+        function showUsernamePage() {
+            document.getElementById('username-page').classList.remove('hidden');
+            document.getElementById('chat-page').classList.add('hidden');
+            document.getElementById('chat').innerHTML = '';
+        }
+
+        function disconnect() {
+            if(stompClient) {
+                const username = document.getElementById('name').value;
+                stompClient.send("/app/chat.addUser",
+                    {},
+                    JSON.stringify({sender: username, type: 'LEAVE', content: username + ' salió del chat'})
+                );
+                stompClient.disconnect();
+                console.log('❌ Disconnected');
+            }
+            showUsernamePage();
+        }
+
+        // Cerrar conexión al salir de la página
+        window.addEventListener('beforeunload', function() {
+            if(stompClient && stompClient.connected) {
+                disconnect();
+            }
+        });
+    </script>
+</body>
+</html>
